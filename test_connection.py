@@ -6,6 +6,12 @@ from openai import OpenAI
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
 
+# DEBUG-ZEILE: Zeigt uns nur die ersten 5 Zeichen deines Keys (Sicherheit!)
+if api_key:
+    print(f"Schlüssel gefunden! Er beginnt mit: {api_key[:5]}...")
+else:
+    print("FEHLER: Der Schlüssel 'OPENAI_API_KEY' konnte nicht in der .env gefunden werden!")
+
 # 2. Den Client initialisieren
 client = OpenAI(api_key=api_key)
 
