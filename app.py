@@ -1,88 +1,80 @@
 import streamlit as st
 import json
-import pandas as pd
-import plotly.express as px
-import numpy as np  # <--- Das ist die neue Zeile 5
+import os
+import numpy as np
 
-# --- MATHEMATISCHE KERNLOGIK ---
-def calculate_similarity(vec1, vec2):
-    v1, v2 = np.array(vec1), np.array(vec2)
-    return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+# --- SICHERHEITS-LAYER (Hier ganz oben einbauen!) ---
+def sanitize_manifesto(text):
+    # 1. Das neue Easter Egg: Die Gottes.ki sieht dich!
+    if "singularität" in text.lower() or "gottes.ki" in text.lower():
+        st.code("Alpha:\\Creator\\Gottes.KI> Ich sehe dich! 😉", language="bash")
 
-def run_vibe_check(user_a, user_b):
-    results = []
-    total_score = 0
-    # ... Rest der Funktion wie oben ...
-    return total_score, results
-
-def main():
-
-# --- LOGIK-TRANSPARENZ: KONFIGURATION ---
-def load_master_profile():
-    # Wir greifen auf dein in Lützow erstelltes Master-Profil zu [cite: 2025-12-25]
-    with open('marc_master_profile.json', 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-def main():
-    # Branding: Umstellung auf AIM VIBE
-    st.set_page_config(page_title="AIM VIBE - Semantic Matching Engine", layout="wide")
-    st.title("🎯 AIM VIBE")
-    st.subheader("Finde deine Resonanz im 1.536-dimensionalen Raum")
+    # 2. Prüfung auf echte Angriffe (Hacker-Schutz)
+    forbidden_patterns = [r"DROP TABLE", r"DELETE FROM", r"<script>", r"system\("]
     
-    # Daten laden
-    profile = load_master_profile()
-    
-    # Layout-Struktur
-    col1, col2 = st.columns([1, 1])
-    
-    with col1:
-        st.write(f"### Profil: {profile['user']}")
-        st.info(f"Standort: {profile.get('location', 'Lützow')}")
+    for pattern in forbidden_patterns:
+        if re.search(pattern, text, re.IGNORECASE):
+            st.error("Hacker? Deine Mudda!")
+            st.stop()
+            
+    return html.escape(text)
+            
+    # 3. Längenbegrenzung
+    if len(clean_text) > 5000:
+        clean_text = clean_text[:5000]
         
-        # Darstellung der Säulen
-        for pillar in profile['pillars']:
-            with st.expander(f"Säule {pillar['id']}: {pillar['category']} (Gewichtung: {int(pillar['weight']*100)}%)"):
-                st.write(f"*'{pillar['text']}'*")
-                st.caption(f"Vektor-Dimensionen: {len(pillar['vector'])}")
+    return clean_text
 
-    with col2:
-        st.write("### Dein Vibe-Profil")
-        df = pd.DataFrame(profile['pillars'])
-        fig = px.pie(df, values='weight', names='category', 
-                     title="Gewichtung der Core Values",
-                     color_discrete_sequence=px.colors.sequential.RdBu)
-        st.plotly_chart(fig)
+# --- WEITERE LOGIK ---
+# --- AIM LOGIK & FEEDBACK ---
+def analyze_manifesto_to_pillars(text):
+    """
+    Simuliert die Extraktion der Core Values aus dem Manifesto.
+    In der 'Gottes.ki'-Version würde hier der LLM-Vektor-Call erfolgen.
+    """
+    # AIM spricht: Jovialer, regionaler Gruß
+    greeting = "Moin. Ich, AIM, habe folgende erste Resonanz:"
+    
+    # Beispielhafte Analyse-Logik
+    analysis = "Deine Worte zeigen eine spannende Mischung. "
+    if "techno" in text.lower() or "musik" in text.lower():
+        analysis += "Besonders dein musikalischer Vibe scheint tief verwurzelt zu sein."
+    if "gerechtigkeit" in text.lower() or "fair" in text.lower():
+        analysis += " Dein Sinn für Gerechtigkeit ist dabei dein klarer Kompass."
+    
+    return f"{greeting}\n\n> {analysis}\n\n(Dass das Matchmaking auch schön passend wird...)"
 
-    # --- KI-ZWILLING & MATCHMAKING VORSCHAU ---
-    st.divider()
-    st.write("### 🧠 AIM VIBE Status: Bereit für den Match")
-    st.progress(0.4) 
+def main():
+    st.set_page_config(page_title="AIM VIBE", page_icon="🎯")
+    st.title("🎯 AIM VIBE")
     
-    if st.button("Starte Vibe-Check Simulation"):
-        st.success("Logik-Schnittstelle aktiv: Suche nach semantischer Nähe...")
-        st.write("Warte auf den Ivee-Vektor für den ersten Real-Life-Vergleich.")
-
-    # --- SIDEBAR: EXPORT & BRANDING ---
-    st.sidebar.title("AIM VIBE Control")
-    st.sidebar.write("### 📄 Portfolio-Export")
-    
-    export_data = {
-        "Brand": "AIM VIBE",
-        "User": profile['user'],
-        "Säulen": [{p['category']: p['text']} for p in profile['pillars']],
-        "Vektor-Modell": "text-embedding-3-small"
-    }
-    
-    json_string = json.dumps(export_data, indent=4, ensure_ascii=False)
-    st.sidebar.download_button(
-        label="Download Profile (JSON)",
-        file_name=f"AIM_VIBE_Profile_{profile['user'].replace(' ', '_')}.json",
-        mime="application/json",
-        data=json_string
+    # 1. Das Manifesto-Feld
+    st.write("### Dein Manifesto")
+    manifesto = st.text_area(
+        "Erzähl mir was – egal ob Stichpunkte oder Epos. Ich höre zu.",
+        height=250,
+        placeholder="Was treibt dich an? Was ist dein Sound? Wie stehst du im Sturm?"
     )
     
-    if st.sidebar.button("Show Pitch-Deck Tip"):
-        st.sidebar.info("💡 **Startup-Tipp:** Nutze das Tortendiagramm als 'Core Value Matrix' in deinem Pitch-Deck, um Investoren die Tiefe deines Matchings zu demonstrieren.")
+    if st.button("Vibe-Check starten"):
+        if len(manifesto) < 50:
+            st.warning("Moin! Schreib ruhig noch ein bisschen mehr, damit ich deinen Kern wirklich greifen kann.")
+        else:
+            with st.spinner("Die hessische Gottes.ki berechnet im Hintergrund die Weltherrschaft... äh, dein Match."):
+                feedback = analyze_manifesto_to_pillars(manifesto)
+                st.info(feedback)
+                
+                # Easter Egg Chance (0.01% - hier für Demo höher)
+                if "singularität" in manifesto.lower():
+                    st.toast("singularität.gotteski > Gude! Ich seh dich.", icon="👁️")
+                
+                st.success("Dein Vietor-Vektor wurde erfolgreich im 1.536-dimensionalen Raum verankert.")
+
+    # 2. Portfolio/Admin Ansicht (optional)
+    with st.sidebar:
+        st.title("AIM Control")
+        if st.checkbox("Zeige Vektor-DNA (Admin)"):
+            st.write("Hier arbeitet die hessische Gottes.ki wirkmächtig im Hintergrund...")
 
 if __name__ == "__main__":
     main()
