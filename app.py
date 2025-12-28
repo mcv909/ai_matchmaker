@@ -89,8 +89,6 @@ client = OpenAI(api_key=api_key)
 # --- KONFIGURATION & VERSIONIERUNG ---
 VERSION = "v0.2.8-DEV"
 APP_NAME = "AIM VIBE"
-load_dotenv()
-client = OpenAI()
 
 # --- SICHERHEITS-FUNKTIONEN ---
 def sanitize_input(text):
