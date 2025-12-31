@@ -15,8 +15,10 @@ import psutil
 from cryptography.fernet import Fernet
 
 # --- INITIALISIERUNG & KONFIG ---
-load_dotenv()
-VERSION = "v0.3.0-PRO-BETA"
+# Bestimmt den absoluten Pfad zum Ordner, in dem diese app.py liegt
+basedir = os.path.abspath(os.path.dirname(__file__))
+load_dotenv(os.path.join(basedir, '.env'))
+VERSION = "v0.3.1-PRO-BETA"
 APP_NAME = "AIM VIBE"
 
 # --- SECURITY & VERSCHLÜSSELUNG ---
