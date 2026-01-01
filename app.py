@@ -15,15 +15,17 @@ import psutil
 from cryptography.fernet import Fernet
 
 # --- INITIALISIERUNG & KONFIG ---
-# Wir bestimmen den Ordner der app.py und den Ordner darüber
-current_dir = os.path.abspath(os.path.dirname(__file__))
-parent_dir = os.path.dirname(current_dir)
+basedir = os.path.abspath(os.path.dirname(__file__))
+parentdir = os.path.dirname(basedir)
 
-# Wir prüfen beide Orte auf eine .env Datei
-env_locations = [
-    os.path.join(current_dir, '.env'),
-    os.path.join(parent_dir, '.env')
-]
+# Wir prüfen beide Orte und erzwingen das Überschreiben alter Werte
+for p in [os.path.join(basedir, '.env'), os.path.join(parentdir, '.env')]:
+    if os.path.exists(p):
+        load_dotenv(p, override=True) # <--- Das 'override=True' ist der Schlüssel!
+        break
+
+VERSION = "v0.3.2-PRO-BETA"
+APP_NAME = "AIM VIBE"
 
 for loc in env_locations:
     if os.path.exists(loc):
