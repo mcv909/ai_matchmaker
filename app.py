@@ -138,7 +138,7 @@ def apply_minimalist_theme():
             text-align: center;
             padding: 40px 0 20px 0;
         }}
-        .brand-title {
+        .brand-title {{
             font-size: 7rem;
             font-weight: 900;
             letter-spacing: 0.5rem;
