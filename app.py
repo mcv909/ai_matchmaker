@@ -32,8 +32,8 @@ for target in env_targets:
         load_dotenv(target, override=True) # Lade das einzelne "target"
         break                           # Stop, wenn eine gefunden wurde
 
-VERSION = "v0.3.4-PRO-BETA"
-APP_NAME = "AIM VIBE"
+VERSION = "v0.4.0-ARCHITECT"
+APP_NAME = "I AM"  # Hier direkt das neue Branding setzen
 
 # --- SECURITY & VERSCHLÜSSELUNG ---
 def get_cipher():
@@ -176,6 +176,8 @@ def main():
     # 4. Branding Header
     st.markdown('<p class="brand-title">I AM</p>', unsafe_allow_html=True)
     st.markdown('<p class="brand-subtitle">Architectural Intelligent Matching</p>', unsafe_allow_html=True)
+    # In der main() nach apply_minimalist_theme()
+    st.markdown(f'<p style="color: rgba(27, 38, 59, 0.3); font-size: 0.7rem; letter-spacing: 0.1rem;">BUILD: {VERSION}</p>', unsafe_allow_html=True)
     
     # 5. Der Qualitative Anker (Das neue Layout)
     col_a, col_b = st.columns(2)
