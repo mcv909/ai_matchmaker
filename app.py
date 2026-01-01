@@ -15,22 +15,24 @@ import psutil
 from cryptography.fernet import Fernet
 
 # --- INITIALISIERUNG & KONFIG ---
+# 1. Pfade definieren
 basedir = os.path.abspath(os.path.dirname(__file__))
 parentdir = os.path.dirname(basedir)
 
-# Wir prüfen beide Orte und erzwingen das Überschreiben alter Werte
-for p in [os.path.join(basedir, '.env'), os.path.join(parentdir, '.env')]:
-    if os.path.exists(p):
-        load_dotenv(p, override=True) # <--- Das 'override=True' ist der Schlüssel!
+# 2. Suchliste für die .env erstellen
+env_targets = [
+    os.path.join(basedir, '.env'),
+    os.path.join(parentdir, '.env')
+]
+
+# 3. .env laden und alte System-Werte (wie @MV303) zwingend überschreiben
+for target in env_targets:
+    if os.path.exists(target):
+        load_dotenv(target, override=True)
         break
 
-VERSION = "v0.3.2-PRO-BETA"
+VERSION = "v0.3.3-PRO-BETA"
 APP_NAME = "AIM VIBE"
-
-for loc in env_locations:
-    if os.path.exists(loc):
-        load_dotenv(loc)
-        break # Stoppt, sobald die erste .env gefunden wurde
 
 VERSION = "v0.3.2-PRO-BETA"
 APP_NAME = "AIM VIBE"
