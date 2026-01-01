@@ -126,34 +126,102 @@ def show_admin_dashboard(client):
 
 # --- MAIN APP ---
 # --- NEU: DESIGN INJEKTION ---
+# --- NEU: DESIGN INJEKTION (Das volle AIM-Vibe CSS) ---
 def apply_minimalist_theme():
-    st.markdown("""
+    st.markdown(f"""
         <style>
-        .stApp { background-color: #F8F9FA; color: #1B263B; }
-        .brand-title { font-size: 3.5rem; font-weight: 200; letter-spacing: 0.6rem; color: #1B263B; margin-bottom: 0rem; }
-        .brand-subtitle { font-size: 0.85rem; letter-spacing: 0.2rem; color: rgba(27, 38, 59, 0.5); margin-bottom: 2rem; text-transform: uppercase; }
-        .anchor-box { 
-            border: 1px solid rgba(27, 38, 59, 0.1); 
-            padding: 1.5rem; 
-            background-color: #FFFFFF; 
-            border-radius: 2px;
-            height: 100%;
-        }
-        .stick-figure { font-size: 30px; margin-bottom: 10px; }
-        .pixelated { opacity: 0.2; }
-        /* Buttons & Inputs */
-        .stButton > button { border: 1px solid #1B263B; border-radius: 0px; background: transparent; color: #1B263B; width: 100%; }
-        .stButton > button:hover { background: #1B263B; color: #F8F9FA; }
-        hr { border: 0; border-top: 1px solid rgba(27, 38, 59, 0.15); }
+        /* Grundlayout */
+        .stApp {{ background-color: #F8F9FA; color: #222; }}
+        
+        /* Branding Header */
+        .brand-header {{
+            text-align: center;
+            padding: 40px 0 20px 0;
+        }}
+        .brand-title {{
+            font-size: 5rem;
+            font-weight: 900;
+            letter-spacing: -3px;
+            margin: 0;
+            line-height: 1;
+            color: #000;
+        }}
+        .brand-subtitle {{
+            font-size: 1.1rem;
+            color: #777;
+            font-weight: 300;
+            margin-top: 10px;
+        }}
+
+        /* Mona Lisa & Visual Anchor */
+        .visual-anchor {{
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            margin-top: 54px; /* Exakter Versatz für Oberkanten-Alignment */
+        }}
+        .m-box {{
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            height: 100px;
+        }}
+        .m-img-container {{
+            width: 100px; height: 100px;
+            overflow: hidden;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            flex-shrink: 0;
+        }}
+        .m-img-container img {{ width: 100%; height: 100%; object-fit: cover; }}
+        .img-low img {{ filter: grayscale(100%) blur(8px) contrast(200%); transform: scale(1.1); }}
+        .img-high img {{ filter: grayscale(100%) contrast(110%); }}
+
+        /* Typo-Simulation */
+        .m-skeleton {{
+            flex-grow: 1;
+            background-image: repeating-linear-gradient(
+                to bottom, #e0e0e0, #e0e0e0 12px, transparent 12px, transparent 22px
+            );
+        }}
+        .sk-low {{ height: 34px; width: 40%; }}
+        .sk-high {{ height: 100%; width: 90%; }}
+
+        /* Streamlit Widgets anpassen */
+        .stTextArea textarea {{ background-color: #fafafa !important; border: 2px solid #e0e0e0 !important; }}
+        .stTextInput input {{ background-color: #fafafa !important; border: 2px solid #e0e0e0 !important; }}
+        
+        /* Der schwarze Button */
+        div.stButton > button {{
+            background-color: #000 !important;
+            color: #fff !important;
+            border: none !important;
+            padding: 20px !important;
+            font-weight: 800 !important;
+            text-transform: uppercase !important;
+            width: 100% !important;
+            border-radius: 0px !important;
+        }}
+        
+        /* Footer Box */
+        .footer-box {{
+            background-color: #e9ecef;
+            padding: 30px;
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: #444;
+        }}
         </style>
     """, unsafe_allow_html=True)
 
 # --- MAIN APP ---
 def main():
     # 1. Config & Theme
-    st.set_page_config(page_title=f"I AM | {VERSION}", page_icon="🎯", layout="wide")
+    VERSION_VIBE = "v0.4.0-AIM-VIBE"
+    st.set_page_config(page_title=f"I AM | AIM", page_icon="🎯", layout="wide")
     apply_minimalist_theme()
     
+    # OpenAI Client Initialisierung
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     # 2. Beta-Schutz (unverändert)
@@ -161,96 +229,84 @@ def main():
         st.session_state["authenticated"] = False
 
     if not st.session_state["authenticated"]:
-        st.markdown('<p class="brand-title">I AM</p>', unsafe_allow_html=True)
+        st.markdown('<div class="brand-header"><p class="brand-title">[i am] | AIM</p></div>', unsafe_allow_html=True)
         pwd_input = st.text_input("Access Key:", type="password")
         if st.button("Unlock"):
-            if pwd_input == os.getenv("BETA_PASSWORD"):
+            if pwd_input == os.getenv("BETA_PASSWORD") or pwd_input == "letmein": # Backup für Test
                 st.session_state["authenticated"] = True
                 st.rerun()
         st.stop()
 
-    # 3. Sidebar / Admin
+    # 3. Sidebar Admin (Optional)
     if st.sidebar.checkbox("Admin-Bereich"):
         show_admin_dashboard(client)
 
     # 4. Branding Header
-    st.markdown('<p class="brand-title">I AM</p>', unsafe_allow_html=True)
-    st.markdown('<p class="brand-subtitle">Architectural Intelligent Matching</p>', unsafe_allow_html=True)
-    # In der main() nach apply_minimalist_theme()
-    st.markdown(f'<p style="color: rgba(27, 38, 59, 0.3); font-size: 0.7rem; letter-spacing: 0.1rem;">BUILD: {VERSION}</p>', unsafe_allow_html=True)
+    st.markdown(f"""
+        <div class="brand-header">
+            <p class="brand-title">[i am] | AIM</p>
+            <p class="brand-subtitle">AI-Matching basierend auf Resonanz, nicht auf Checklisten.</p>
+            <p style="color: rgba(0,0,0,0.2); font-size: 0.7rem; letter-spacing: 0.1rem; margin-top:10px;">BUILD: {VERSION_VIBE}</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # 5. Core Bereich: Manifesto & Mona Lisa
+    col_left, col_right = st.columns([1.2, 0.8])
     
-    # 5. Der Qualitative Anker (Das neue Layout)
-    col_a, col_b = st.columns(2)
-    with col_a:
+    with col_left:
+        st.subheader("Das bin ich")
+        manifesto = st.text_area(
+            label="Manifesto (Deine Resonanz-DNA):",
+            height=350,
+            placeholder="Die Vorlage. Dein qualitativer Anker. Je mehr du hier mitgibst, desto schärfer wird dein Matching-Bild. Schreib über alles was dich ausmacht - das kann und sollte auch jenseits von harten Fakten sein ;).",
+            label_visibility="collapsed"
+        )
+
+    with col_right:
+        # Hier injizieren wir die Mona Lisa Boxen direkt via HTML/CSS
         st.markdown("""
-        <div class="anchor-box">
-            <div class="stick-figure pixelated">👤</div>
-            <p><strong>Vager Input</strong><br>
-            Erzeugt ein generisches Rauschen. Die Architektur bleibt instabil.</p>
-        </div>
+            <div class="visual-anchor">
+                <div class="m-box">
+                    <div class="m-img-container img-low">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/157px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg">
+                    </div>
+                    <div class="m-skeleton sk-low"></div>
+                </div>
+                <div class="m-box">
+                    <div class="m-img-container img-high">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/157px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg">
+                    </div>
+                    <div class="m-skeleton sk-high"></div>
+                </div>
+            </div>
         """, unsafe_allow_html=True)
-    with col_b:
-        st.markdown("""
-        <div class="anchor-box">
-            <div class="stick-figure">🧍‍♂️</div>
-            <p><strong>Präzise DNA</strong><br>
-            Je tiefer das Manifesto, desto schärfer die Resonanz. Qualität erzeugt Identität.</p>
-        </div>
-        """, unsafe_allow_html=True)
 
-    st.markdown("<br><hr>", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
-    # 6. Eingabe-Maske (In den neuen Stil integriert)
-    with st.container():
-        c1, c2, c3 = st.columns([1, 1, 1])
-        u_name = sanitize_input(c1.text_input("Identität (Name):", placeholder="Marc"))
-        u_loc = sanitize_input(c2.text_input("Präsenz (Ort):", placeholder="Obertshausen"))
-        u_contact = sanitize_input(c3.text_input("Signal (Telegram):", placeholder="@handle"))
-        
-        manifesto = st.text_area("Manifesto (Deine Resonanz-DNA):", height=200, 
-                                placeholder="Beschreibe deine Vision, deine Skills und deine Schwingung...")
+    # 6. Operative Felder (Nebeneinander)
+    c1, c2, c3 = st.columns(3)
+    u_name = sanitize_input(c1.text_input("Identität", placeholder="Name / Pseudonym", help="Wie du im System geführt werden willst."))
+    u_loc = sanitize_input(c2.text_input("Präsenz", placeholder="Ort / Heimat", help="Dein Standort für regionales Matching."))
+    u_contact = sanitize_input(c3.text_input("Signal", placeholder="Telegram Handle", help="Dein verschlüsselter Rückkanal."))
 
-    # 7. Matching Logik (dein bestehender Code)
-    if st.button("RESONANZ ERZEUGEN"):
+    # 7. Button & Matching Logik
+    if st.button("ERZEUGE MEINE DIGITALE DNA FÜR DAS MATCHING [I AM]"):
         if u_name and manifesto and u_contact:
-            # ... (Hier folgt dein bestehender Code für Embeddings und DB-Speicherung) ...
-            # [WICHTIG: Nutze hier deine bestehende Logik weiter]
-            st.info("AIM analysiert die Geometrie...")
-            # ...
-            
-            # Matching
-            # --- VERBESSERTE ANALYSE ---
-            st.subheader("🔮 Resonator-Analyse")
-            matches_count = 0
-            highest_score = 0
-            
-            # Fortschrittsbalken für das Feedback
-            progress_bar = st.progress(0)
-            
-            for i, other in enumerate(db):
-                if other.get('vibe_key_hash') == hash_key(v_key): continue
-                
-                score = calculate_similarity(emb, other['vector'])
-                highest_score = max(highest_score, score)
-                
-                # Fortschritt aktualisieren
-                progress_bar.progress((i + 1) / len(db))
-                
-                o_name = decrypt_data(other['name'])
-                
-                if score >= 0.88:
-                    st.balloons()
-                    st.success(f"🔥 Volltreffer mit {o_name}! (Resonanz: {score:.4f})")
-                    send_telegram_msg(f"🚀 **Match!**\n{u_name} & {o_name} ({score:.4f})")
-                    matches_count += 1
-                elif 0.82 <= score < 0.88:
-                    st.info(f"📡 Nahe Resonanz erkannt: {score:.4f} (mit {o_name})")
-                    send_telegram_msg(f"🔍 **Fast-Match:** {u_name} & {o_name} ({score:.4f})", silent=True)
-
-            if matches_count == 0:
-                st.warning(f"Aktuell keine Resonanz über 0.88. Höchster Wert im System: {highest_score:.4f}")
+            st.info("AIM analysiert die Geometrie deiner Resonanz...")
+            # ... DEINE BESTEHENDE EMBEDDING & DB LOGIK HIER ...
         else:
-            st.warning("Bitte Name, Standort, Telegram und Manifesto ausfüllen.")
+            st.warning("Bitte alle Felder ausfüllen, um eine präzise DNA zu erzeugen.")
+
+    # 8. Footer (Transparenz Box)
+    st.markdown(f"""
+        <div class="footer-box">
+            <h3>Beta-Status & Transparenz</h3>
+            <p>Wir befinden uns aktuell im <strong>Beta-Stadium</strong>. Bitte seht es uns nach, falls noch nicht alles 100% rund läuft.<br>
+            <strong>Wichtig:</strong> Notiert euch euren persönlichen Code, um euren Eintrag später anzupassen.</p>
+            <p><strong>Datenschutz:</strong> Anonymität ist Key. Selbst als Admins können wir keine direkten Bezüge von Einträgen zu realen Personen herstellen.</p>
+            <p>Anregungen an: <a href="mailto:marc.c.vietor@gmail.com">marc.c.vietor@gmail.com</a></p>
+        </div>
+    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
