@@ -219,7 +219,9 @@ def apply_minimalist_theme():
 # --- MAIN APP ---
 def main():
     # 1. Config & Theme
-    VERSION_VIBE = "v0.4.0-AIM-VIBE"
+    # Alt: VERSION_VIBE = "v0.4.0-AIM-VIBE"
+    # Neu:
+    VERSION_VIBE = VERSION  # Zieht sich den Wert von ganz oben (Zeile 35)
     st.set_page_config(page_title=f"I AM | AIM", page_icon="🎯", layout="wide")
     apply_minimalist_theme()
     
