@@ -354,9 +354,9 @@ def main():
                     best_match = other
             
             # 4. Speichern des neuen Profils
-            # Falls wir im Edit-Mode sind, nehmen wir den Key aus dem Input, sonst generieren wir einen neuen
+            # Wir prüfen, ob wir einen Key zum Editieren haben, sonst neu
             v_key = st.session_state.get('m_key') if st.session_state.get('edit_mode_hash') else str(uuid.uuid4())[:8]
-            target_hash = hash_key(v_key)
+            t_hash = hash_key(v_key) # Wir definieren den Hash hier lokal für diesen Block
 
             new_record = {
                 "name": encrypt_data(u_name),
@@ -365,7 +365,7 @@ def main():
                 "target_gender": u_target,
                 "loc": encrypt_data(u_loc),
                 "contact": encrypt_data(u_contact),
-                "vibe_key_hash": target_hash,
+                "vibe_key_hash": t_hash, # Nutze t_hash hier
                 "vector": embedding,
                 "timestamp": datetime.datetime.now().isoformat()
             }
