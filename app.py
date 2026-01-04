@@ -32,7 +32,7 @@ for target in env_targets:
         load_dotenv(target, override=True) # Lade das einzelne "target"
         break                           # Stop, wenn eine gefunden wurde
 
-VERSION = "v0.4.1-ARCHITECT"
+VERSION = "v0.4.2-Funktionalität"
 APP_NAME = "I AM"  # Hier direkt das neue Branding setzen
 
 # --- SECURITY & VERSCHLÜSSELUNG ---
@@ -288,10 +288,50 @@ def main():
     st.markdown("<br>", unsafe_allow_html=True)
 
     # 6. Operative Felder (Nebeneinander)
-    c1, c2, c3 = st.columns(3)
+    # 6. Operative Felder & Filter
+    row1_c1, row1_c2, row1_c3 = st.columns(3)
+    u_name = sanitize_input(row1_c1.text_input("Identität", value=st.session_state.get('ld_name', ""), placeholder="Name / Pseudonym"))
+    u_loc = sanitize_input(row1_c2.text_input("Präsenz", value=st.session_state.get('ld_loc', ""), placeholder="Ort / Heimat"))
+    u_contact = sanitize_input(row1_c3.text_input("Signal", value=st.session_state.get('ld_contact', ""), placeholder="Telegram Handle"))
+
+    row2_c1, row2_c2, row2_c3 = st.columns(3)
+    u_gender = row2_c1.selectbox("Ich bin", ["m", "w", "d"], index=["m", "w", "d"].index(st.session_state.get('ld_gender', "m")))
+    u_goal = row2_c2.selectbox("Ich suche", ["Partner", "Freunde"], index=["Partner", "Freunde"].index(st.session_state.get('ld_goal', "Partner")))
+    u_target = row2_c3.selectbox("Resonanz-Ziel", ["m", "w", "d", "egal"], index=["m", "w", "d", "egal"].index(st.session_state.get('ld_target', "egal")))
     u_name = sanitize_input(c1.text_input("Identität", placeholder="Name / Pseudonym", help="Wie du im System geführt werden willst."))
     u_loc = sanitize_input(c2.text_input("Präsenz", placeholder="Ort / Heimat", help="Dein Standort für regionales Matching."))
     u_contact = sanitize_input(c3.text_input("Signal", placeholder="Telegram Handle", help="Dein verschlüsselter Rückkanal."))
+    with st.expander("🔑 Bestehendes Profil verwalten (Laden / Löschen)"):
+        manage_key = st.text_input("Dein Access Key", type="password", key="m_key")
+        col_m1, col_m2 = st.columns(2)
+        
+        if col_m1.button("Profil laden"):
+            if os.path.exists('profiles_db.json'):
+                with open('profiles_db.json', 'r') as f:
+                    db = json.load(f)
+                target_hash = hash_key(manage_key)
+                profile = next((p for p in db if p['vibe_key_hash'] == target_hash), None)
+                if profile:
+                    st.session_state['ld_name'] = decrypt_data(profile['name'])
+                    st.session_state['ld_loc'] = decrypt_data(profile['loc'])
+                    st.session_state['ld_contact'] = decrypt_data(profile['contact'])
+                    st.session_state['ld_gender'] = profile.get('gender', 'm')
+                    st.session_state['ld_goal'] = profile.get('goal', 'Partner')
+                    st.session_state['ld_target'] = profile.get('target_gender', 'egal')
+                    st.session_state['edit_mode_hash'] = target_hash
+                    st.success("Daten geladen! Du kannst sie jetzt anpassen und unten neu speichern.")
+                    st.rerun()
+                else: st.error("Key nicht gefunden.")
+
+        if col_m2.button("PROFIL LÖSCHEN", type="secondary"):
+            if manage_key:
+                target_hash = hash_key(manage_key)
+                if os.path.exists('profiles_db.json'):
+                    with open('profiles_db.json', 'r') as f: db = json.load(f)
+                    new_db = [p for p in db if p['vibe_key_hash'] != target_hash]
+                    with open('profiles_db.json', 'w') as f: json.dump(new_db, f, indent=2)
+                    st.warning("Profil wurde dauerhaft aus der DNA-Datenbank entfernt.")
+                    st.rerun()
 
     # 7. Button & Matching Logik
     if st.button("ERZEUGE MEINE DIGITALE DNA FÜR DAS MATCHING [I AM]"):
@@ -320,12 +360,19 @@ def main():
             v_key = str(uuid.uuid4())[:8]
             new_record = {
                 "name": encrypt_data(u_name),
+                "gender": u_gender,
+                "goal": u_goal,
+                "target_gender": u_target,
                 "loc": encrypt_data(u_loc),
                 "contact": encrypt_data(u_contact),
-                "vibe_key_hash": hash_key(v_key),
+                "vibe_key_hash": target_hash,
                 "vector": embedding,
                 "timestamp": datetime.datetime.now().isoformat()
             }
+            if st.session_state.get('edit_mode_hash'):
+                db = [p for p in db if p['vibe_key_hash'] != st.session_state['edit_mode_hash']]
+                st.session_state['edit_mode_hash'] = None # Reset nach Update
+            
             db.append(new_record)
             with open('profiles_db.json', 'w') as f:
                 json.dump(db, f, indent=2)
