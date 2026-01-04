@@ -334,9 +334,17 @@ def main():
     if st.button("ERZEUGE MEINE DIGITALE DNA FÜR DAS MATCHING [I AM]"):
         if u_name and manifesto and u_contact:
             st.info("AIM analysiert die Geometrie deiner Resonanz...")
-            # 1. Vektorisierung via OpenAI
-            emb_res = client.embeddings.create(input=manifesto, model="text-embedding-3-small")
-            embedding = emb_res.data[0].embedding
+            # 1. Vektorisierung via OpenAI (mit Error-Handling)
+            try:
+                emb_res = client.embeddings.create(
+                    input=manifesto, 
+                    model="text-embedding-3-small",
+                    timeout=15.0  # Verhindert unendliches Hängen
+                )
+                embedding = emb_res.data[0].embedding
+            except Exception as e:
+                st.error(f"❌ OpenAI Fehler: {e}")
+                st.stop()
             
             # 2. Datenbank laden & Abgleich
             db = []
@@ -348,10 +356,11 @@ def main():
             best_match = None
             best_score = -1
             for other in db:
-                score = calculate_similarity(embedding, other['vector'])
-                if score > best_score:
-                    best_score = score
-                    best_match = other
+                if "vector" in other and other["vector"]: # Sicherheits-Check
+                    score = calculate_similarity(embedding, other['vector'])
+                    if score > best_score:
+                        best_score = score
+                        best_match = other
             
             # 4. Speichern des neuen Profils
             # Wir prüfen, ob wir einen Key zum Editieren haben, sonst neu
