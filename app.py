@@ -297,7 +297,49 @@ def main():
     if st.button("ERZEUGE MEINE DIGITALE DNA FÜR DAS MATCHING [I AM]"):
         if u_name and manifesto and u_contact:
             st.info("AIM analysiert die Geometrie deiner Resonanz...")
-            # ... DEINE BESTEHENDE EMBEDDING & DB LOGIK HIER ...
+            # 1. Vektorisierung via OpenAI
+            emb_res = client.embeddings.create(input=manifesto, model="text-embedding-3-small")
+            embedding = emb_res.data[0].embedding
+            
+            # 2. Datenbank laden & Abgleich
+            db = []
+            if os.path.exists('profiles_db.json'):
+                with open('profiles_db.json', 'r') as f:
+                    db = json.load(f)
+            
+            # 3. Matching-Suche (Resonanz-Check)
+            best_match = None
+            best_score = -1
+            for other in db:
+                score = calculate_similarity(embedding, other['vector'])
+                if score > best_score:
+                    best_score = score
+                    best_match = other
+            
+            # 4. Speichern des neuen Profils
+            v_key = str(uuid.uuid4())[:8]
+            new_record = {
+                "name": encrypt_data(u_name),
+                "loc": encrypt_data(u_loc),
+                "contact": encrypt_data(u_contact),
+                "vibe_key_hash": hash_key(v_key),
+                "vector": embedding,
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+            db.append(new_record)
+            with open('profiles_db.json', 'w') as f:
+                json.dump(db, f, indent=2)
+            
+            # 5. Visualisierung & Telegram
+            st.success(f"DNA erfolgreich stabilisiert! Dein Access-Key: {v_key}")
+            if best_match:
+                m_name = decrypt_data(best_match['name'])
+                st.balloons()
+                st.write(f"✨ **Resonanz-Match gefunden:** {m_name} (Score: {best_score:.4f})")
+                send_telegram_msg(f"🚀 **Neues Match!**\n{u_name} & {m_name}\nResonanz-Score: {best_score:.4f}")
+            else:
+                send_telegram_msg(f"📝 Neuer User registriert: {u_name} ({u_loc})")
+
         else:
             st.warning("Bitte alle Felder ausfüllen, um eine präzise DNA zu erzeugen.")
 
