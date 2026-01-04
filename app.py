@@ -298,9 +298,6 @@ def main():
     u_gender = row2_c1.selectbox("Ich bin", ["m", "w", "d"], index=["m", "w", "d"].index(st.session_state.get('ld_gender', "m")))
     u_goal = row2_c2.selectbox("Ich suche", ["Partner", "Freunde"], index=["Partner", "Freunde"].index(st.session_state.get('ld_goal', "Partner")))
     u_target = row2_c3.selectbox("Resonanz-Ziel", ["m", "w", "d", "egal"], index=["m", "w", "d", "egal"].index(st.session_state.get('ld_target', "egal")))
-    u_name = sanitize_input(c1.text_input("Identität", placeholder="Name / Pseudonym", help="Wie du im System geführt werden willst."))
-    u_loc = sanitize_input(c2.text_input("Präsenz", placeholder="Ort / Heimat", help="Dein Standort für regionales Matching."))
-    u_contact = sanitize_input(c3.text_input("Signal", placeholder="Telegram Handle", help="Dein verschlüsselter Rückkanal."))
     with st.expander("🔑 Bestehendes Profil verwalten (Laden / Löschen)"):
         manage_key = st.text_input("Dein Access Key", type="password", key="m_key")
         col_m1, col_m2 = st.columns(2)
@@ -357,7 +354,10 @@ def main():
                     best_match = other
             
             # 4. Speichern des neuen Profils
-            v_key = str(uuid.uuid4())[:8]
+            # Falls wir im Edit-Mode sind, nehmen wir den Key aus dem Input, sonst generieren wir einen neuen
+            v_key = st.session_state.get('m_key') if st.session_state.get('edit_mode_hash') else str(uuid.uuid4())[:8]
+            target_hash = hash_key(v_key)
+
             new_record = {
                 "name": encrypt_data(u_name),
                 "gender": u_gender,
